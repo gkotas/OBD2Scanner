@@ -6,7 +6,7 @@
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
-  * USER CODE END. Other portions of this file, whether 
+  * USER CODE END. Other portions of this file, whether
   * inserted by the user or by software development tools
   * are owned by their respective copyright owners.
   *
@@ -53,7 +53,8 @@
 extern UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN Private defines */
-
+char rx_index, rx_data[2], rx_buf[256];
+int rx_complete;
 /* USER CODE END Private defines */
 
 void MX_USART2_UART_Init(void);
