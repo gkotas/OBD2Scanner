@@ -1,6 +1,9 @@
 #MicroXplorer Configuration settings - do not modify
-CAN1.CalculateTimeQuantum=1000.0
-CAN1.IPParameters=CalculateTimeQuantum
+CAN1.BS1=CAN_BS1_13TQ
+CAN1.BS2=CAN_BS2_2TQ
+CAN1.CalculateTimeQuantum=125.0
+CAN1.IPParameters=CalculateTimeQuantum,Prescaler,BS1,BS2
+CAN1.Prescaler=2
 File.Version=6
 KeepUserPlacement=false
 Mcu.Family=STM32F4
@@ -32,6 +35,10 @@ Mcu.UserName=STM32F446RETx
 MxCube.Version=5.0.1
 MxDb.Version=DB.5.0.1
 NVIC.BusFault_IRQn=true\:0\:0\:false\:false\:true\:false
+NVIC.CAN1_RX0_IRQn=true\:0\:0\:false\:false\:true\:true
+NVIC.CAN1_RX1_IRQn=true\:0\:0\:false\:false\:true\:true
+NVIC.CAN1_SCE_IRQn=true\:0\:0\:false\:false\:true\:true
+NVIC.CAN1_TX_IRQn=true\:0\:0\:false\:false\:true\:true
 NVIC.DebugMonitor_IRQn=true\:0\:0\:false\:false\:true\:false
 NVIC.EXTI15_10_IRQn=true\:0\:0\:false\:false\:true\:true
 NVIC.HardFault_IRQn=true\:0\:0\:false\:false\:true\:false
