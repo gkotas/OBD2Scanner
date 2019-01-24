@@ -6,7 +6,7 @@
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
-  * USER CODE END. Other portions of this file, whether 
+  * USER CODE END. Other portions of this file, whether
   * inserted by the user or by software development tools
   * are owned by their respective copyright owners.
   *
@@ -41,9 +41,7 @@
 #include "can.h"
 
 /* USER CODE BEGIN 0 */
-CAN_RxHeaderTypeDef   RxHeader;
-uint8_t               RxData[8];
-
+#include "obd2.h"
 /* USER CODE END 0 */
 
 CAN_HandleTypeDef hcan1;
@@ -82,11 +80,11 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef* canHandle)
   /* USER CODE END CAN1_MspInit 0 */
     /* CAN1 clock enable */
     __HAL_RCC_CAN1_CLK_ENABLE();
-  
+
     __HAL_RCC_GPIOA_CLK_ENABLE();
-    /**CAN1 GPIO Configuration    
+    /**CAN1 GPIO Configuration
     PA11     ------> CAN1_RX
-    PA12     ------> CAN1_TX 
+    PA12     ------> CAN1_TX
     */
     GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -120,10 +118,10 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef* canHandle)
   /* USER CODE END CAN1_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_CAN1_CLK_DISABLE();
-  
-    /**CAN1 GPIO Configuration    
+
+    /**CAN1 GPIO Configuration
     PA11     ------> CAN1_RX
-    PA12     ------> CAN1_TX 
+    PA12     ------> CAN1_TX
     */
     HAL_GPIO_DeInit(GPIOA, GPIO_PIN_11|GPIO_PIN_12);
 
@@ -136,7 +134,7 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef* canHandle)
 
   /* USER CODE END CAN1_MspDeInit 1 */
   }
-} 
+}
 
 /* USER CODE BEGIN 1 */
 void CAN_Config(void)
@@ -171,37 +169,13 @@ void CAN_Config(void)
 
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
-  int i;
+  CAN_RxHeaderTypeDef   rx_header;
+  uint8_t               rx_data[RX_DATA_LENGTH];
+
   // Get message
-  HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &RxHeader, RxData);
+  HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &rx_header, rx_data);
 
-  printf("Got a message back from %x\r\n", RxHeader.StdId);
-  for (i = 0; i < RxHeader.DLC; i++) {
-    printf("%02x ", RxData[i]);
-  }
-  printf("\r\n");
-
-#ifdef BOARD1
-    if ((RxHeader.StdId == BOARD1_STDID) && (RxHeader.RTR != CAN_RTR_DATA)) {
-        HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-        TxHeader.StdId = BOARD1_STDID;
-        TxHeader.ExtId = 0x00;
-        TxHeader.RTR = CAN_RTR_DATA;
-        TxHeader.IDE = CAN_ID_STD;
-        TxHeader.DLC = RxHeader.DLC;
-        TxHeader.TransmitGlobalTime = DISABLE;
-
-        freelevel = HAL_CAN_GetTxMailboxesFreeLevel(&hcan1);
-        if (freelevel) {
-            printf("Got a request, sending count %d.\r\n", count);
-            TxData[0] = count;
-            count++;
-            HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox);
-        } else {
-            //printf("No free mailboxes");
-        }
-    }
-#endif
+  OBD2_PrintResponse(&rx_header, rx_data);
 }
 
 /* USER CODE END 1 */

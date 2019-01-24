@@ -46,7 +46,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "obd2.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -108,10 +108,11 @@ PUTCHAR_PROTOTYPE
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  CAN_TxHeaderTypeDef   TxHeader;
-  uint8_t               TxData[8] = {0x01, 0x00, 0x41, 0xef};
-  uint32_t              TxMailbox;
+  CAN_TxHeaderTypeDef   tx_header;
+  uint8_t               tx_data[TX_DATA_LENGTH];
+  uint32_t              tx_mailbox;
   uint32_t              freelevel;
+
 
   /* USER CODE END 1 */
 
@@ -141,6 +142,13 @@ int main(void)
   printf("Hello World\r\n");
   HAL_UART_Receive_IT(&huart2, rx_data, 1);
   HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
+
+  tx_header.StdId = SCANNER_STDID;
+  tx_header.ExtId = 0x00;
+  tx_header.RTR = CAN_RTR_DATA;
+  tx_header.IDE = CAN_ID_STD;
+  tx_header.DLC = TX_DATA_LENGTH;
+  tx_header.TransmitGlobalTime = DISABLE;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -155,19 +163,14 @@ int main(void)
 
       printf("Got this <%s>\r\n", rx_buf);
 
-      TxHeader.StdId = 0x4;
-      TxHeader.ExtId = 0x00;
-      TxHeader.RTR = CAN_RTR_DATA;
-      TxHeader.IDE = CAN_ID_STD;
-      TxHeader.DLC = 4;
-      TxHeader.TransmitGlobalTime = DISABLE;
-
-      freelevel = HAL_CAN_GetTxMailboxesFreeLevel(&hcan1);
-      if (freelevel) {
-        HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox);
-        printf("Sent a message\r\n");
-      } else {
-        printf("No free mailboxes\r\n");
+      if (!OBD2_Parse(rx_buf, &tx_data)) {
+        freelevel = HAL_CAN_GetTxMailboxesFreeLevel(&hcan1);
+        if (freelevel) {
+          HAL_CAN_AddTxMessage(&hcan1, &tx_header, tx_data, &tx_mailbox);
+          printf("Sent a message\r\n");
+        } else {
+          printf("No free mailboxes\r\n");
+        }
       }
 
       // Reset transfer complete flag
@@ -186,11 +189,11 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /**Configure the main internal regulator output voltage 
+  /**Configure the main internal regulator output voltage
   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
-  /**Initializes the CPU, AHB and APB busses clocks 
+  /**Initializes the CPU, AHB and APB busses clocks
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
@@ -200,7 +203,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /**Initializes the CPU, AHB and APB busses clocks 
+  /**Initializes the CPU, AHB and APB busses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -245,7 +248,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */

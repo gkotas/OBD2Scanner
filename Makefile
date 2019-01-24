@@ -39,6 +39,7 @@ C_SOURCES =  \
 Src/main.c \
 Src/gpio.c \
 Src/can.c \
+Src/obd2.c \
 Src/usart.c \
 Src/syscalls.c \
 Src/stm32f4xx_it.c \
